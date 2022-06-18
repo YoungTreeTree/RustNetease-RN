@@ -1,26 +1,22 @@
 mod util;
 mod model;
+mod api;
 
+use std::borrow::Borrow;
 use std::process::Command;
 use std::thread;
 use std::collections::HashMap;
 use std::time::Duration;
 
 use qrcode_generator::QrCodeEcc;
+use crate::api::*;
 
-use crate::model::login::{
-    QrcodeUnikey, QrcodeCheck
-};
-use crate::model::user::{
-    GetUserRes, UserProfile
-};
-use crate::model::playlist::{
-    PlayList, GetPlayListrRes
-};
+use crate::model::login::*;
+use crate::model::user::*;
+use crate::model::playlist::*;
 
 use crate::util::Encrypt;
 use crate::util::http::CloudMusic;
-use std::borrow::Borrow;
 
 #[derive(Clone, Debug)]
 struct GlobalState {
@@ -58,35 +54,25 @@ fn main(){
         }
     }
 
-    let mut params= HashMap::<String, String>::new();
-    params.insert("type".to_string(), "1".to_string());
-    let res = client.post("/weapi/nuser/account/get", &mut params);
-    let res: GetUserRes = serde_json::from_str(&res).unwrap();
-    println!("{:?}", &res);
-    global_state.user_profile = Some(res.profile);
+    let user_profile = user_profile();
+    global_state.user_profile = Some(user_profile);
 
-    let mut params= HashMap::<String, String>::new();
-    params.insert("uid".to_string(), global_state.user_profile.clone().unwrap().userId.to_string());
-    params.insert("limit".to_string(), 30.to_string());
-    params.insert("offset".to_string(), 0.to_string());
-    params.insert("includeVideo".to_string(), true.to_string());
-    let res = client.post("/weapi/user/playlist", &mut params);
-    let res: GetPlayListrRes = serde_json::from_str(&res).unwrap();
-    println!("{:?}", &res);
-    global_state.playlists.append(&mut res.playlist.to_owned());
+    let mut playlist = user_playlist(global_state.user_profile.clone().unwrap().userId.to_string().borrow());
+    global_state.playlists.append(&mut playlist);
     println!("{:?}", &global_state);
 
+    let playlist_detail = playlist_detail(&global_state.playlists[0].id.to_string());
+
+    let first_song = &playlist_detail.tracks.unwrap()[0];
+    println!("first song {} {}", first_song.name, first_song.id);
 
     let mut params= HashMap::<String, String>::new();
-    let playlist: &PlayList = &(global_state.playlists)[0];
-    params.insert("id".to_string(), playlist.id.to_string());
-    params.insert("limit".to_string(), 10.to_string());
-    params.insert("offset".to_string(), 0.to_string());
-    let res = client.post("/weapi/v6/playlist/detail", &mut params);
-
-
-
-    https://interface3.music.163.com/eapi/song/enhance/player/url
+    params.insert("ids".to_string(), format!("[{}]", first_song.id));
+    params.insert("br".to_string(), "999000".to_string());
+    let res = client.post("/weapi/song/enhance/player/url", &mut params);
+    let res: GetPlayerInfoRes = serde_json::from_str(&res).unwrap();
+    let player_info = &res.data[0];
+    println!("song url {:?}", player_info);
 
 
 }

@@ -4,7 +4,6 @@ use reqwest::{ Method};
 use reqwest::header::{
     HeaderMap, ACCEPT, ACCEPT_ENCODING, CONTENT_TYPE, COOKIE, HOST, REFERER, USER_AGENT,
 };
-use openssl::hash::{hash};
 use reqwest::blocking::Client;
 use crate::Encrypt;
 use crate::util::convert_map_to_string;
@@ -82,10 +81,11 @@ impl CloudMusic {
         url: &str,
         payload: Option<String>,
     ) -> String {
-        if url.is_prefix_of("/") {
-            let url: &str = &[&self.host, url].concat();
+        let mut url = (*url).to_string();
+        if !url.starts_with("http") {
+            url = [self.host.to_owned(), url].concat()
         }
-        let url =if url.into_string() { };
+
         let mut headers = HeaderMap::new();
         headers.insert(
             CONTENT_TYPE,
@@ -103,7 +103,7 @@ impl CloudMusic {
         headers.insert(ACCEPT_ENCODING, "gzip,deflate".parse().unwrap());
         headers.insert(COOKIE, self.get_cookies().parse().unwrap());
         let res = {
-            let builder = self.client.request(method, url).headers(headers);
+            let builder = self.client.request(method, &url).headers(headers);
             let builder = if let Some(data) = payload {
                 builder.body(data)
             } else {

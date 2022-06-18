@@ -10,6 +10,7 @@ dependencies = [
  "chrono",
  "hex",
  "image",
+ "lazy_static",
  "num-bigint",
  "openssl",
  "qrcode-generator",
