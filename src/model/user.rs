@@ -1,12 +1,13 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct QrcodeUnikey {
-    pub unikey: String,
+pub struct UserProfile {
+    pub userId: i64,
+    pub nickname: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct QrcodeCheck {
-    pub message: String,
+pub struct GetUserRes {
     pub code: i64,
+    pub profile: UserProfile,
 }

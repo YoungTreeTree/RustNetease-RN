@@ -1,7 +1,6 @@
 use openssl::{
     hash::{hash, MessageDigest},
     symm::{encrypt, Cipher},
-    aes::{AesKey, aes_ige},
 };
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};

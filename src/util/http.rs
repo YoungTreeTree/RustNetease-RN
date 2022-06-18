@@ -1,20 +1,19 @@
 use std::collections::HashMap;
 use std::fs;
-use reqwest::{ClientBuilder, Method};
+use reqwest::{ Method};
 use reqwest::header::{
     HeaderMap, ACCEPT, ACCEPT_ENCODING, CONTENT_TYPE, COOKIE, HOST, REFERER, USER_AGENT,
 };
-use chrono::{DateTime, Local};
-use openssl::hash::{hash, MessageDigest};
+use openssl::hash::{hash};
 use reqwest::blocking::Client;
-use tokio::task::spawn_blocking;
 use crate::Encrypt;
 use crate::util::convert_map_to_string;
 
 const COOKIE_PATH: &str = "cookie";
 
 pub struct CloudMusic {
-    client: Client
+    client: Client,
+    host: String
 }
 
 impl CloudMusic {
@@ -24,9 +23,9 @@ impl CloudMusic {
             .cookie_store(true)
             .build()
             .unwrap();
-
         CloudMusic {
-            client
+            client,
+            host: "https://music.163.com".to_string()
         }
     }
 
@@ -83,6 +82,10 @@ impl CloudMusic {
         url: &str,
         payload: Option<String>,
     ) -> String {
+        if url.is_prefix_of("/") {
+            let url: &str = &[&self.host, url].concat();
+        }
+        let url =if url.into_string() { };
         let mut headers = HeaderMap::new();
         headers.insert(
             CONTENT_TYPE,
