@@ -40,4 +40,5 @@ pub struct PlayerInfo {
     pub url: String,
     pub level: String,
     pub encodeType: String,
+    pub md5: String,
 }

@@ -1,10 +1,9 @@
 use std::collections::HashMap;
 use std::fs;
-use reqwest::{ Method};
+use reqwest::{Method, Client};
 use reqwest::header::{
     HeaderMap, ACCEPT, ACCEPT_ENCODING, CONTENT_TYPE, COOKIE, HOST, REFERER, USER_AGENT,
 };
-use reqwest::blocking::Client;
 use crate::Encrypt;
 use crate::util::convert_map_to_string;
 
@@ -28,7 +27,7 @@ impl CloudMusic {
         }
     }
 
-    fn store_cookies(&self, res: &reqwest::blocking::Response) {
+    fn store_cookies(&self, res: &reqwest::Response) {
         let cookies: Vec<String> = res
             .cookies()
             .into_iter()
@@ -48,7 +47,7 @@ impl CloudMusic {
         }
     }
 
-    pub fn post(
+    pub async fn post(
         &self,
         url: &str,
         params: &mut HashMap<String, String>,
@@ -56,10 +55,10 @@ impl CloudMusic {
         let csrf_token = String::new();
         params.insert("csrf_token".to_owned(), csrf_token);
         let params = Encrypt::encrypt_login(params);
-        self.internal_call(Method::POST, &url, Some(params))
+        self.internal_call(Method::POST, &url, Some(params)).await
     }
 
-    pub fn get(
+    pub async fn get(
         &self,
         url: &str,
         params: &mut HashMap<String, String>,
@@ -69,13 +68,13 @@ impl CloudMusic {
             let mut url_with_params = url.to_owned();
             url_with_params.push('?');
             url_with_params.push_str(&param);
-            self.internal_call(Method::GET, &url_with_params, None)
+            self.internal_call(Method::GET, &url_with_params, None).await
         } else {
-            self.internal_call(Method::GET, url, None)
+            self.internal_call(Method::GET, url, None).await
         }
     }
 
-    fn internal_call(
+    async fn internal_call(
         &self,
         method: Method,
         url: &str,
@@ -109,7 +108,7 @@ impl CloudMusic {
             } else {
                 builder
             };
-            builder.send()
+            builder.send().await
         };
 
         let res = match res {
@@ -122,7 +121,7 @@ impl CloudMusic {
             Err(error) => panic!("Problem get response: {:?}", error)
         };
 
-        let res = match res {
+        let res = match res.await {
             Ok(res) => res,
             Err(error) => panic!("Problem get response body: {:?}", error)
         };
