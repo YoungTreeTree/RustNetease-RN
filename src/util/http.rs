@@ -53,7 +53,7 @@ impl CloudMusic {
         params: &mut HashMap<String, String>,
     ) -> String {
         let csrf_token = String::new();
-        params.insert("csrf_token".to_owned(), csrf_token);
+        params.insert("csrf_token".to_string(), csrf_token);
         let params = Encrypt::encrypt_login(params);
         self.internal_call(Method::POST, &url, Some(params)).await
     }
@@ -125,7 +125,7 @@ impl CloudMusic {
             Ok(res) => res,
             Err(error) => panic!("Problem get response body: {:?}", error)
         };
-        println!("{} {:?}", url, res);
+        //println!("{} {:?}", url, res);
         res
     }
 }

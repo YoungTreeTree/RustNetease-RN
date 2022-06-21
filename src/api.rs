@@ -37,8 +37,8 @@ pub async fn user_playlist(uid: &str) -> Vec<PlayList> {
 pub async fn playlist_detail(playlist_id: &str) -> PlayList {
     let mut params= HashMap::<String, String>::new();
     params.insert("id".to_string(), playlist_id.to_string());
-    params.insert("limit".to_string(), 10.to_string());
-    params.insert("offset".to_string(), 0.to_string());
+    params.insert("n".to_string(), 100000.to_string());
+    params.insert("s".to_string(), 0.to_string());
     let res = CLIENT.post("/weapi/v6/playlist/detail", &mut params);
     let playlist_detail: GetPlayListDetailRes = serde_json::from_str(&res.await).unwrap();
     playlist_detail.playlist
@@ -49,6 +49,8 @@ pub async fn player_info(track_id: &str) -> PlayerInfo {
     params.insert("ids".to_string(), format!("[{}]", track_id));
     params.insert("br".to_string(), "999000".to_string());
     let res = CLIENT.post("/weapi/song/enhance/player/url", &mut params);
-    let res: GetPlayerInfoRes = serde_json::from_str(&res.await).unwrap();
+    let s = &res.await;
+    //println!("{}", s);
+    let res: GetPlayerInfoRes = serde_json::from_str(s).unwrap();
     res.data[0].to_owned()
 }

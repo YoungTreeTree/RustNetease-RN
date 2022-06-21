@@ -39,6 +39,7 @@ pub struct PlayerInfo {
     pub size: i64,
     pub url: String,
     pub level: String,
-    pub encodeType: String,
+    #[serde(rename = "type")]
+    pub typ: String,
     pub md5: String,
 }
